@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Category Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Category Manager</h1>
+            <p class="text-gray-600">Create, view, edit, and delete categories</p>
+        </div>
+
+        <!-- Add Category Form -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4">Add New Category</h2>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <input 
+                    type="text" 
+                    id="categoryName" 
+                    placeholder="Category name" 
+                    class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                >
+                <input 
+                    type="text" 
+                    id="categoryDescription" 
+                    placeholder="Description (optional)" 
+                    class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                >
+                <button 
+                    onclick="addCategory()" 
+                    class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                >
+                    Add Category
+                </button>
+            </div>
+        </div>
+
+        <!-- Categories List -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-semibold text-gray-800">Categories</h2>
+                <span id="categoryCount" class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">0 categories</span>
+            </div>
+            
+            <div id="categoriesList" class="space-y-4">
+                <!-- Categories will be displayed here -->
+            </div>
+            
+            <div id="emptyState" class="text-center py-12 text-gray-500">
+                <div class="text-6xl mb-4">📁</div>
+                <p class="text-lg">No categories yet</p>
+                <p class="text-sm">Add your first category above to get started</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md mx-4">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Edit Category</h3>
+            <div class="space-y-4">
+                <input 
+                    type="text" 
+                    id="editCategoryName" 
+                    placeholder="Category name" 
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                >
+                <input 
+                    type="text" 
+                    id="editCategoryDescription" 
+                    placeholder="Description (optional)" 
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                >
+                <div class="flex gap-3 pt-2">
+                    <button 
+                        onclick="saveEdit()" 
+                        class="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                    >
+                        Save Changes
+                    </button>
+                    <button 
+                        onclick="closeEditModal()" 
+                        class="flex-1 px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let categories = [];
+        let editingId = null;
+
+        // Load categories from localStorage on page load
+        window.onload = function() {
+            const saved = localStorage.getItem('categories');
+            if (saved) {
+                categories = JSON.parse(saved);
+                renderCategories();
+            }
+        };
+
+        function saveToStorage() {
+            localStorage.setItem('categories', JSON.stringify(categories));
+        }
+
+        function addCategory() {
+            const name = document.getElementById('categoryName').value.trim();
+            const description = document.getElementById('categoryDescription').value.trim();
+            
+            if (!name) {
+                alert('Please enter a category name');
+                return;
+            }
+
+            const newCategory = {
+                id: Date.now(),
+                name: name,
+                description: description,
+                createdAt: new Date().toLocaleDateString()
+            };
+
+            categories.push(newCategory);
+            saveToStorage();
+            renderCategories();
+            
+            // Clear form
+            document.getElementById('categoryName').value = '';
+            document.getElementById('categoryDescription').value = '';
+        }
+
+        function renderCategories() {
+            const container = document.getElementById('categoriesList');
+            const emptyState = document.getElementById('emptyState');
+            const countElement = document.getElementById('categoryCount');
+            
+            countElement.textContent = `${categories.length} ${categories.length === 1 ? 'category' : 'categories'}`;
+            
+            if (categories.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            emptyState.style.display = 'none';
+            
+            container.innerHTML = categories.map(category => `
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-gray-800">${category.name}</h3>
+                            ${category.description ? `<p class="text-gray-600 mt-1">${category.description}</p>` : ''}
+                            <p class="text-sm text-gray-500 mt-2">Created: ${category.createdAt}</p>
+                        </div>
+                        <div class="flex gap-2 ml-4">
+                            <button 
+                                onclick="editCategory(${category.id})" 
+                                class="px-3 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors text-sm font-medium"
+                            >
+                                Edit
+                            </button>
+                            <button 
+                                onclick="deleteCategory(${category.id})" 
+                                class="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function editCategory(id) {
+            const category = categories.find(c => c.id === id);
+            if (!category) return;
+            
+            editingId = id;
+            document.getElementById('editCategoryName').value = category.name;
+            document.getElementById('editCategoryDescription').value = category.description;
+            document.getElementById('editModal').classList.remove('hidden');
+            document.getElementById('editModal').classList.add('flex');
+        }
+
+        function saveEdit() {
+            const name = document.getElementById('editCategoryName').value.trim();
+            const description = document.getElementById('editCategoryDescription').value.trim();
+            
+            if (!name) {
+                alert('Please enter a category name');
+                return;
+            }
+
+            const categoryIndex = categories.findIndex(c => c.id === editingId);
+            if (categoryIndex !== -1) {
+                categories[categoryIndex].name = name;
+                categories[categoryIndex].description = description;
+                saveToStorage();
+                renderCategories();
+                closeEditModal();
+            }
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').classList.add('hidden');
+            document.getElementById('editModal').classList.remove('flex');
+            editingId = null;
+        }
+
+        function deleteCategory(id) {
+            const category = categories.find(c => c.id === id);
+            if (!category) return;
+            
+            if (confirm(`Are you sure you want to delete "${category.name}"?`)) {
+                categories = categories.filter(c => c.id !== id);
+                saveToStorage();
+                renderCategories();
+            }
+        }
+
+        // Allow Enter key to add category
+        document.getElementById('categoryName').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addCategory();
+            }
+        });
+
+        document.getElementById('categoryDescription').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addCategory();
+            }
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditModal();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97819682d3c4731c',t:'MTc1NjY5NjM2Ni4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

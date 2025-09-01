@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="examstyle4.css">
+    <title>เปลี่ยนสีพื้นหลัง</title>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title-icon">🎨</div>
+            <h1 class="title">เปลี่ยนสีพื้นหลัง</h1>
+            <p class="subtitle">คลิกปุ่มเพื่อเปลี่ยนสีพื้นหลัง</p>
+        </div>
+
+        <div class="button-container">
+            <button id="redButton" class="color-button red-button">
+                🔴 แดง
+            </button>
+            
+            <button id="greenButton" class="color-button green-button">
+                🟢 เขียว
+            </button>
+            
+            <button id="blueButton" class="color-button blue-button">
+                🔵 น้ำเงิน
+            </button>
+
+            <button id="resetButton" class="color-button reset-button">
+                🔄 รีเซ็ต
+            </button>
+        </div>
+
+        <div class="status-container">
+            <div class="status-text">สีพื้นหลังปัจจุบัน:</div>
+            <div id="currentColor" class="current-color">ส้ม-เหลือง</div>
+            <div id="colorPreview" class="color-preview" style="background: linear-gradient(45deg, #ea6666, #ffdf77);"></div>
+        </div>
+    </div>
+
+    <script>
+        // รับ reference ของ elements
+        const body = document.body;
+        const redButton = document.getElementById('redButton');
+        const greenButton = document.getElementById('greenButton');
+        const blueButton = document.getElementById('blueButton');
+        const resetButton = document.getElementById('resetButton');
+        const currentColorText = document.getElementById('currentColor');
+        const colorPreview = document.getElementById('colorPreview');
+
+        // ฟังก์ชันสำหรับอัพเดทสถานะสี
+        function updateColorStatus(colorName, gradientStyle) {
+            currentColorText.textContent = colorName;
+            colorPreview.style.background = gradientStyle;
+            
+            // เพิ่มเอฟเฟกต์แอนิเมชัน
+            colorPreview.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                colorPreview.style.transform = 'scale(1)';
+            }, 300);
+        }
+
+        // เพิ่ม Event Listeners สำหรับปุ่มแดง
+        redButton.addEventListener('click', function() {
+            body.className = 'bg-red';
+            updateColorStatus('แดง', 'linear-gradient(45deg, #ff6b6b, #ee5a52)');
+            console.log('เปลี่ยนเป็นสีแดง');
+        });
+
+        // เพิ่ม Event Listeners สำหรับปุ่มเขียว
+        greenButton.addEventListener('click', function() {
+            body.className = 'bg-green';
+            updateColorStatus('เขียว', 'linear-gradient(45deg, #51cf66, #40c057)');
+            console.log('เปลี่ยนเป็นสีเขียว');
+        });
+
+        // เพิ่ม Event Listeners สำหรับปุ่มน้ำเงิน
+        blueButton.addEventListener('click', function() {
+            body.className = 'bg-blue';
+            updateColorStatus('น้ำเงิน', 'linear-gradient(45deg, #339af0, #228be6)');
+            console.log('เปลี่ยนเป็นสีน้ำเงิน');
+        });
+
+        // เพิ่ม Event Listeners สำหรับปุ่มรีเซ็ต
+        resetButton.addEventListener('click', function() {
+            body.className = 'bg-default';
+            updateColorStatus('ม่วง-น้ำเงิน', 'linear-gradient(45deg, #667eea, #764ba2)');
+            console.log('รีเซ็ตเป็นสีเริ่มต้น');
+        });
+
+        // เพิ่มเอฟเฟกต์เสียงเมื่อคลิก (ถ้าต้องการ)
+        document.querySelectorAll('.color-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // เพิ่มเอฟเฟกต์ ripple
+                const ripple = document.createElement('span');
+                ripple.style.position = 'absolute';
+                ripple.style.borderRadius = '50%';
+                ripple.style.background = 'rgba(255, 255, 255, 0.6)';
+                ripple.style.transform = 'scale(0)';
+                ripple.style.animation = 'ripple 0.6s linear';
+                ripple.style.left = '50%';
+                ripple.style.top = '50%';
+                ripple.style.width = '20px';
+                ripple.style.height = '20px';
+                ripple.style.marginLeft = '-10px';
+                ripple.style.marginTop = '-10px';
+                
+                this.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // เพิ่ม CSS animation สำหรับ ripple effect
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes ripple {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // เพิ่มการทำงานด้วยคีย์บอร์ด
+        document.addEventListener('keydown', function(event) {
+            switch(event.key) {
+                case '1':
+                    redButton.click();
+                    break;
+                case '2':
+                    greenButton.click();
+                    break;
+                case '3':
+                    blueButton.click();
+                    break;
+                case '0':
+                    resetButton.click();
+                    break;
+            }
+        });
+
+        console.log('🎨 Color Changer loaded! กด 1=แดง, 2=เขียว, 3=น้ำเงิน, 0=รีเซ็ต');
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'974806fb00277334',t:'MTc1NjA5Mjc5OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
